@@ -28,13 +28,25 @@ app.get('/test', (request, response) => {
   response.send('test request received');
 });
 
-app.get('/movies', getMovies);
+app.get('/movies', getMovies); 
+
+app.get('/movies/:email', getMoviesByEmail);
 
 app.delete('/movies/:movieID', deleteMovies);
 
 app.post('/movies', postMovies);
 
 app.put('/movies/:movieID', updateMovies);
+
+async function getMoviesByEmail(request, response, next) {
+  try {
+    let email = request.params.email;
+    const foundMovies = await Movie.find({email});
+    response.status(200).send(foundMovies);
+  } catch (error) {
+    next(error);
+  }
+}
 
 async function updateMovies(request, response, next) {
   try {
@@ -80,19 +92,21 @@ async function getMovies(request, response, next) {
 
     let moviesFromAxios = await axios.get(url);
     let movieArray = moviesFromAxios.data.results;
-    let movieResult = movieArray.map((movie) => new Movie(movie));
+    let movieResult = movieArray.map((movie) => new MovieParser(movie));
 
-    response.status(200).send(moviesFromAxios);
+    response.status(200).send(movieResult);
   } catch (error) {
     console.log(error.message);
     next(error);
   }
 }
 
-class Movie {
+class MovieParser {
   constructor(movieObj) {
     this.movie = movieObj.title;
     this.description = movieObj.overview;
+    this.poster = movieObj.poster_path;
+    this.video = movieObj.video;
   }
 }
 
