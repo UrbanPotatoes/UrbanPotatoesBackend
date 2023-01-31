@@ -6,7 +6,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const Movie = require('./models/movie');
 mongoose.connect(process.env.DB_URL);
-const axios = require("axios");
+const axios = require('axios');
 
 
 const db = mongoose.connection;
@@ -28,7 +28,11 @@ app.get('/test', (request, response) => {
   response.send('test request received');
 });
 
-app.get('/movies', getMovies); 
+app.get('/movies', getMovies);
+ 
+app.get('/getPopular', getPopular); 
+
+app.get('/getNow', getNow); 
 
 app.get('/movies/:email', getMoviesByEmail);
 
@@ -89,6 +93,37 @@ async function getMovies(request, response, next) {
     // let allMovies = await Movie.find({});
     let searchQuery = request.query.searchQuery;
     let url = `https://api.themoviedb.org/3/search/movie?api_key=${process.env.MOVIE_API_KEY}&query=${searchQuery}&language=en-US&page=1&include_adult=false`;
+
+    let moviesFromAxios = await axios.get(url);
+    let movieArray = moviesFromAxios.data.results;
+    let movieResult = movieArray.map((movie) => new MovieParser(movie));
+
+    response.status(200).send(movieResult);
+  } catch (error) {
+    console.log(error.message);
+    next(error);
+  }
+}
+
+async function getPopular(request, response, next) {
+  try {
+    
+    let url = `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.MOVIE_API_KEY}&language=en-US&page=1&adult=false`;
+
+    let moviesFromAxios = await axios.get(url);
+    let movieArray = moviesFromAxios.data.results;
+    let movieResult = movieArray.map((movie) => new MovieParser(movie));
+
+    response.status(200).send(movieResult);
+  } catch (error) {
+    console.log(error.message);
+    next(error);
+  }
+}
+async function getNow(request, response, next) {
+  try {
+    
+    let url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${process.env.MOVIE_API_KEY}&language=en-US&page=1&adult=false`;
 
     let moviesFromAxios = await axios.get(url);
     let movieArray = moviesFromAxios.data.results;
