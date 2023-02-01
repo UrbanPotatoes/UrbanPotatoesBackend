@@ -31,7 +31,7 @@ app.get('/test', (request, response) => {
 app.get('/movies', getMovies);
 app.get('/getPopular', getPopular);
 app.get('/getNow', getNow);
-app.get('/movies/:email', getMoviesByEmail);
+app.get('/movies/:title', getMoviesByTitle);
 
 app.delete('/movies/:movieID', deleteMovies);
 
@@ -39,10 +39,10 @@ app.post('/movies', postMovies);
 
 app.put('/movies/:movieID', updateMovies);
 
-async function getMoviesByEmail(request, response, next) {
+async function getMoviesByTitle(request, response, next) {
   try {
-    let email = request.params.email;
-    const foundMovies = await Movie.find({email});
+    let title = request.params.title;
+    const foundMovies = await Movie.find({ title });
     response.status(200).send(foundMovies);
   } catch (error) {
     next(error);
@@ -63,20 +63,27 @@ async function updateMovies(request, response, next) {
   }
 }
 
+//add logic to search database
 async function postMovies(request, response, next) {
   try {
-    let createdMovie = await Movie.create(request.body);
-    response.status(200).send(createdMovie);
+    let dbMovie = Movie.find(request.body.title);
+    console.log(dbMovie);
+    if (request.body.title === dbMovie) {
+      response.status(200).send(dbMovie);
+    } else {
+      let createdMovie = await Movie.create(request.body.title);
+      response.status(200).send(createdMovie);
+    }
   } catch (error) {
     next(error);
   }
 }
 
 async function deleteMovies(request, response, next) {
-  console.log('inside of delete books function...serverside');
+
   try {
     let id = request.params.movieID;
-    console.log(request.params.movieID);
+
     await Movie.findByIdAndDelete(id);
 
     response.status(200).send('Movie Deleted');
