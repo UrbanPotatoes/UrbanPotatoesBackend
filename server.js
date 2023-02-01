@@ -31,11 +31,11 @@ app.get('/test', (request, response) => {
 app.get('/movies', getMovies);
 app.get('/getPopular', getPopular);
 app.get('/getNow', getNow);
-app.get('/movies/:title', getMoviesByTitle);
+app.get('/movies/:id', getMoviesByTitle);
 
 app.delete('/movies/:movieID', deleteMovies);
 
-app.post('/movies/:movieID', postMovies);
+app.post('/movies/:id', postMovies);
 
 app.put('/movies/:movieID', updateMovies);
 
@@ -66,14 +66,14 @@ async function updateMovies(request, response, next) {
 //add logic to search database
 async function postMovies(request, response, next) {
   try {
-    let title = request.params.title;
-    const foundMovie = await Movie.find({ title });
+    let id = +request.params.id;
+    const foundMovie = await Movie.find({ movieId:id });
 
     console.log(foundMovie);
-    if (title === foundMovie.title) {
-      response.status(200).send(foundMovie);
+    if (foundMovie.length) {
+      response.status(200).send(foundMovie[0]);
     } else {
-      let createdMovie = await Movie.create(request.body.title);
+      let createdMovie = await Movie.create(request.body);
       response.status(200).send(createdMovie);
     }
   } catch (error) {
@@ -142,6 +142,7 @@ async function getNow(request, response, next) {
 
 class MovieParser {
   constructor(movieObj) {
+    this.movieId = movieObj.id;
     this.title = movieObj.title;
     this.description = movieObj.overview;
     this.poster = movieObj.poster_path;
