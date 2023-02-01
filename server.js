@@ -35,7 +35,7 @@ app.get('/movies/:title', getMoviesByTitle);
 
 app.delete('/movies/:movieID', deleteMovies);
 
-app.post('/movies', postMovies);
+app.post('/movies/:movieID', postMovies);
 
 app.put('/movies/:movieID', updateMovies);
 
@@ -66,10 +66,12 @@ async function updateMovies(request, response, next) {
 //add logic to search database
 async function postMovies(request, response, next) {
   try {
-    let dbMovie = Movie.find(request.body.title);
-    console.log(dbMovie);
-    if (request.body.title === dbMovie) {
-      response.status(200).send(dbMovie);
+    let title = request.params.title;
+    const foundMovie = await Movie.find({ title });
+
+    console.log(foundMovie);
+    if (title === foundMovie.title) {
+      response.status(200).send(foundMovie);
     } else {
       let createdMovie = await Movie.create(request.body.title);
       response.status(200).send(createdMovie);
@@ -140,7 +142,7 @@ async function getNow(request, response, next) {
 
 class MovieParser {
   constructor(movieObj) {
-    this.movie = movieObj.title;
+    this.title = movieObj.title;
     this.description = movieObj.overview;
     this.poster = movieObj.poster_path;
     this.video = movieObj.video;

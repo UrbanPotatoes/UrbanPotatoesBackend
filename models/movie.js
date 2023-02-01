@@ -9,7 +9,7 @@ const movieSchema = new Schema({
   description: { type: String, required: true },
   poster: { type: String, required: true },
   video: { type: Boolean, required: true },
-  rating: { type: Number, required: true},
+  // rating: { type: Number, required: true},
   comment: { type: Array , required: false},
 
 });
