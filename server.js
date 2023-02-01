@@ -29,11 +29,8 @@ app.get('/test', (request, response) => {
 });
 
 app.get('/movies', getMovies);
- 
-app.get('/getPopular', getPopular); 
-
-app.get('/getNow', getNow); 
-
+app.get('/getPopular', getPopular);
+app.get('/getNow', getNow);
 app.get('/movies/:email', getMoviesByEmail);
 
 app.delete('/movies/:movieID', deleteMovies);
@@ -107,7 +104,6 @@ async function getMovies(request, response, next) {
 
 async function getPopular(request, response, next) {
   try {
-    
     let url = `https://api.themoviedb.org/3/movie/popular?api_key=${process.env.MOVIE_API_KEY}&language=en-US&page=1&adult=false`;
 
     let moviesFromAxios = await axios.get(url);
@@ -122,7 +118,6 @@ async function getPopular(request, response, next) {
 }
 async function getNow(request, response, next) {
   try {
-    
     let url = `https://api.themoviedb.org/3/movie/now_playing?api_key=${process.env.MOVIE_API_KEY}&language=en-US&page=1&adult=false`;
 
     let moviesFromAxios = await axios.get(url);
