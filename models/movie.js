@@ -5,6 +5,7 @@ const mongoose = require("mongoose");
 const { Schema } = mongoose;
 
 const movieSchema = new Schema({
+  movieId: { type: Number},
   title: { type: String, required: true },
   description: { type: String, required: true },
   poster: { type: String, required: true },
