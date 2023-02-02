@@ -5,13 +5,14 @@ const mongoose = require('mongoose');
 const { Schema } = mongoose;
 
 const userSchema = new Schema({
-  email: { type: String, required: true },
-  favoritelist: { type: String, required: true },
-  watchlaterlist: { type: String, required: true },
-  watchedlist: { type: String, required: true },
-  email: String,
+
+  email:{ type: String, required: true },
+  favoritelist:{ type: Array, required: true },
+  watchlaterlist:{ type: Array, required: true },
+  watchedlist:{ type: Array, required: true },
+
 });
 
-const userModel = mongoose.model('users', userSchema);
+const userModel = mongoose.model('user', userSchema);
 
 module.exports = userModel;
