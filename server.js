@@ -8,7 +8,7 @@ const Movie = require('./models/movie');
 const User = require('./models/user');
 mongoose.connect(process.env.DB_URL);
 const axios = require('axios');
-const verifyUser = require("./auth");
+const verifyUser = require('./auth');
 
 
 const db = mongoose.connection;
@@ -31,13 +31,12 @@ app.get('/test', (request, response) => {
 });
 
 
-app.use(verifyUser);
 
-app.get("/movies", handleGetMovie);
+
+// app.get('/user', handleGetUser);
 
 // app.get('/user', getUser);
-app.post('/user/:id', postUser);
-// app.put('/user/:id', updateUser);
+app.put('/user/:id', updateUser);
 
 
 app.get('/movies', getMovies);
@@ -51,16 +50,33 @@ app.post('/movies/:id', postMovies);
 
 app.put('/movies/:movieID', updateMovies);
 
-async function postUser(request, response, next) {
+app.use(verifyUser);
+app.post('/user', postUser);
+
+async function updateUser(request, response, next) {
   try {
     let id = request.params.id;
-    const foundUser = await User.find({ email: id });
+    let data = request.body;
+    let options = { new: true, overwrite: true };
+
+    const updateUser = await User.findByIdAndUpdate(id, data, options);
+
+    response.status(200).send(updateUser);
+  } catch (error) {
+    next(error);
+  }
+}
+
+async function postUser(request, response, next) {
+  try {
+    let email = request.user.email;
+    const foundUser = await User.find({ email });
 
     console.log(foundUser);
     if (foundUser.length) {
       response.status(200).send(foundUser[0]);
     } else {
-      let createdMovie = await User.create(request.body);
+      let createdMovie = await User.create({...request.body, email: request.user.email});
       response.status(200).send(createdMovie);
     }
   } catch (error) {
@@ -140,11 +156,11 @@ async function getMovies(request, response, next) {
   }
 }
 
-async function handleGetMovie(req, res) {
+async function handleGetUser(req, res) {
   ///
   try {
-    const moviesFromDb = await Movie.find({ email: req.user.email });
-    res.status(200).send(moviesFromDb);
+    const userFromDb = await User.find({ email: req.user.email });
+    res.status(200).send(userFromDb);
   } catch (e) {
     console.error(e);
     res.status(500).send("server error");
