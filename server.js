@@ -8,6 +8,7 @@ const Movie = require('./models/movie');
 const Moviereview =require('./models/moviereview')
 mongoose.connect(process.env.DB_URL);
 const axios = require('axios');
+const verifyUser = require("./auth");
 
 
 const db = mongoose.connection;
@@ -29,15 +30,19 @@ app.get('/test', (request, response) => {
   response.send('test request received');
 });
 
+app.use(verifyUser);
+
+app.get("/movies", handleGetMovie);
+
 app.get('/moviereview', getMovieReviews);
 app.get('/movies', getMovies);
 app.get('/getPopular', getPopular);
 app.get('/getNow', getNow);
-app.get('/movies/:email', getMoviesByEmail);
+app.get('/movies/:id', getMoviesByTitle);
 
 app.delete('/movies/:movieID', deleteMovies);
 
-app.post('/movies', postMovies);
+app.post('/movies/:id', postMovies);
 
 app.put('/movies/:movieID', updateMovies);
 
@@ -58,10 +63,10 @@ async function getMovieReviews(request, response, next) {
 
 
 
-async function getMoviesByEmail(request, response, next) {
+async function getMoviesByTitle(request, response, next) {
   try {
-    let email = request.params.email;
-    const foundMovies = await Movie.find({email});
+    let title = request.params.title;
+    const foundMovies = await Movie.find({ title });
     response.status(200).send(foundMovies);
   } catch (error) {
     next(error);
@@ -82,21 +87,30 @@ async function updateMovies(request, response, next) {
   }
 }
 
+//add logic to search database
 async function postMovies(request, response, next) {
   try {
-    let createdMovie = await Movie.create(request.body);
-    console.log(createdMovie);
+    let id = +request.params.id;
+    const foundMovie = await Movie.find({ movieId:id });
+
+    console.log(foundMovie);
+    if (foundMovie.length) {
+      response.status(200).send(foundMovie[0]);
+    } else {
+      let createdMovie = await Movie.create(request.body);
+      console.log(createdMovie);
     response.status(200).send(createdMovie);
+    }
   } catch (error) {
     next(error);
   }
 }
 
 async function deleteMovies(request, response, next) {
-  console.log('inside of delete books function...serverside');
+
   try {
     let id = request.params.movieID;
-    console.log(request.params.movieID);
+
     await Movie.findByIdAndDelete(id);
 
     response.status(200).send('Movie Deleted');
@@ -119,6 +133,17 @@ async function getMovies(request, response, next) {
   } catch (error) {
     console.log(error.message);
     next(error);
+  }
+}
+
+async function handleGetMovie(req, res) {
+  ///
+  try {
+    const moviesFromDb = await Movie.find({ email: req.user.email });
+    res.status(200).send(moviesFromDb);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("server error");
   }
 }
 
@@ -153,7 +178,8 @@ async function getNow(request, response, next) {
 
 class MovieParser {
   constructor(movieObj) {
-    this.movie = movieObj.title;
+    this.movieId = movieObj.id;
+    this.title = movieObj.title;
     this.description = movieObj.overview;
     this.poster = movieObj.poster_path;
     this.video = movieObj.video;
