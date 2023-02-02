@@ -12,7 +12,6 @@ const movieSchema = new Schema({
   video: { type: Boolean, required: true },
   // rating: { type: Number, required: true},
   comment: { type: Array, required: false },
-  email: String,
 });
 
 const movieModel = mongoose.model('movie', movieSchema);
