@@ -8,6 +8,7 @@ const Movie = require('./models/movie');
 const User = require('./models/user');
 mongoose.connect(process.env.DB_URL);
 const axios = require('axios');
+const verifyUser = require("./auth");
 
 
 const db = mongoose.connection;
@@ -29,9 +30,15 @@ app.get('/test', (request, response) => {
   response.send('test request received');
 });
 
+
+app.use(verifyUser);
+
+app.get("/movies", handleGetMovie);
+
 // app.get('/user', getUser);
 app.post('/user/:id', postUser);
 // app.put('/user/:id', updateUser);
+
 
 app.get('/movies', getMovies);
 app.get('/getPopular', getPopular);
@@ -130,6 +137,17 @@ async function getMovies(request, response, next) {
   } catch (error) {
     console.log(error.message);
     next(error);
+  }
+}
+
+async function handleGetMovie(req, res) {
+  ///
+  try {
+    const moviesFromDb = await Movie.find({ email: req.user.email });
+    res.status(200).send(moviesFromDb);
+  } catch (e) {
+    console.error(e);
+    res.status(500).send("server error");
   }
 }
 
