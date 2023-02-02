@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const Movie = require('./models/movie');
+const Moviereview =require('./models/moviereview')
 mongoose.connect(process.env.DB_URL);
 const axios = require('axios');
 
@@ -28,6 +29,7 @@ app.get('/test', (request, response) => {
   response.send('test request received');
 });
 
+app.get('/moviereview', getMovieReviews);
 app.get('/movies', getMovies);
 app.get('/getPopular', getPopular);
 app.get('/getNow', getNow);
@@ -38,6 +40,23 @@ app.delete('/movies/:movieID', deleteMovies);
 app.post('/movies', postMovies);
 
 app.put('/movies/:movieID', updateMovies);
+
+async function getMovieReviews(request, response, next) {
+  try {
+    // let allMovies = await Movie.find({});
+    let url = `https://api.nytimes.com/svc/movies/v2/reviews/all.json?offset=20&order=by-publication-date&api-key=${process.env.MOVIE_REVIEW_KEY}`;
+
+    let reviewsFromAxios = await axios.get(url);
+    let movieReviews = reviewsFromAxios.data.results;
+
+    response.status(200).send(movieReviews);
+  } catch (error) {
+    console.log(error.message);
+    next(error);
+  }
+}
+
+
 
 async function getMoviesByEmail(request, response, next) {
   try {
@@ -66,6 +85,7 @@ async function updateMovies(request, response, next) {
 async function postMovies(request, response, next) {
   try {
     let createdMovie = await Movie.create(request.body);
+    console.log(createdMovie);
     response.status(200).send(createdMovie);
   } catch (error) {
     next(error);
