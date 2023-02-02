@@ -203,6 +203,7 @@ class MovieParser {
     this.description = movieObj.overview;
     this.poster = movieObj.poster_path;
     this.video = movieObj.video;
+    this.comment = [];
   }
 }
 
