@@ -5,6 +5,7 @@ const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const Movie = require('./models/movie');
+const User = require('./models/user');
 mongoose.connect(process.env.DB_URL);
 const axios = require('axios');
 
@@ -28,6 +29,10 @@ app.get('/test', (request, response) => {
   response.send('test request received');
 });
 
+// app.get('/user', getUser);
+app.post('/user/:id', postUser);
+// app.put('/user/:id', updateUser);
+
 app.get('/movies', getMovies);
 app.get('/getPopular', getPopular);
 app.get('/getNow', getNow);
@@ -38,6 +43,23 @@ app.delete('/movies/:movieID', deleteMovies);
 app.post('/movies/:id', postMovies);
 
 app.put('/movies/:movieID', updateMovies);
+
+async function postUser(request, response, next) {
+  try {
+    let id = request.params.id;
+    const foundUser = await User.find({ email: id });
+
+    console.log(foundUser);
+    if (foundUser.length) {
+      response.status(200).send(foundUser[0]);
+    } else {
+      let createdMovie = await User.create(request.body);
+      response.status(200).send(createdMovie);
+    }
+  } catch (error) {
+    next(error);
+  }
+}
 
 async function getMoviesByTitle(request, response, next) {
   try {
